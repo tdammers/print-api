@@ -8,6 +8,7 @@
 --  The option parsing for the CLI
 module PrintApi.CLI.Types
   ( Options (..)
+  , PackageDesc(..)
   , RunMode (..)
   , parseOptions
   , withInfo
@@ -21,7 +22,7 @@ import System.OsPath qualified as OsPath
 import Paths_print_api qualified
 
 data Options = Options
-  { packageName :: String
+  { package :: PackageDesc
   , ignoreList :: Maybe OsPath
   , haddockMetadata :: Bool
   }
@@ -35,12 +36,26 @@ data RunMode
 parseOptions :: Parser Options
 parseOptions =
   Options
-    <$> option
-      str
-      (long "package-name" <> short 'p' <> metavar "PACKAGE NAME" <> help "Name of the package")
+    <$> packageDesc
     <*> optional
       (option osPathOption (long "modules-ignore-list" <> metavar "FILE" <> help "Read the file for a list of ignored modules (one per line)"))
     <*> switch (long "public-only" <> help "Process modules with `Visibility: Public` set in their Haddock attributes.")
+
+data PackageDesc = ByPackageName String | ByUnitId String
+  deriving stock (Show, Ord, Eq)
+
+
+packageDesc :: Parser PackageDesc
+packageDesc = packageName <|> unitId
+  where
+    packageName =
+        option
+          (ByPackageName <$> str)
+          (long "package-name" <> short 'p' <> metavar "PACKAGE NAME" <> help "Name of the package")
+    unitId =
+        option
+          (ByUnitId <$> str)
+          (long "unit-id" <> short 'u' <> metavar "UNIT ID" <> help "Name of the unit")
 
 withInfo :: Parser a -> String -> ParserInfo a
 withInfo opts desc =

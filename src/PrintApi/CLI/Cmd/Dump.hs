@@ -57,7 +57,7 @@ import GHC.Unit.External (eps_inst_env)
 import GHC.Unit.Info (PackageName (..), UnitInfo, unitExposedModules, unitId)
 import GHC.Unit.Module (ModuleName, mkModuleName)
 import GHC.Unit.State (lookupPackageName, lookupUnitId)
-import GHC.Unit.Types (UnitId)
+import GHC.Unit.Types (UnitId(..))
 import GHC.Utils.Logger (HasLogger (..))
 import GHC.Utils.Outputable
   ( Depth (..)
@@ -76,38 +76,58 @@ import Prelude hiding ((<>))
 
 import Data.Functor ((<&>))
 import PrintApi.IgnoredDeclarations
+import PrintApi.CLI.Types (PackageDesc(..))
 import System.OsPath (OsPath)
 
 run
   :: FilePath
   -> Maybe OsPath
   -> Bool
-  -> String
+  -> PackageDesc
   -> IO ()
-run root mIgnoreList usePublicOnly packageName = do
+run root mIgnoreList usePublicOnly pdesc = do
   case mIgnoreList of
     Nothing -> do
-      rendered <- computePackageAPI usePublicOnly root [] packageName
+      rendered <- computePackageAPI usePublicOnly root [] pdesc
       liftIO $ putStrLn rendered
     Just ignoreListPath -> do
       userIgnoredModules <- do
         ignoreListFilePath <- liftIO $ OsPath.decodeFS ignoreListPath
         modules <- lines <$> liftIO (System.readFile ignoreListFilePath)
         pure $ List.map mkModuleName modules
-      rendered <- computePackageAPI usePublicOnly root userIgnoredModules packageName
+      rendered <- computePackageAPI usePublicOnly root userIgnoredModules pdesc
       liftIO $ putStrLn rendered
+
+getPackageDesc
+    :: PackageDesc
+    -> Ghc UnitInfo
+getPackageDesc pdesc = do
+  unit_state <- hsc_units <$> getSession
+  unitId <- case pdesc of
+    ByPackageName name -> do
+        case lookupPackageName unit_state (PackageName $ fsLit name) of
+          Just unitId -> pure unitId
+          Nothing -> fail "failed to find package"
+    ByUnitId uid -> return $ UnitId $ fsLit uid
+  case lookupUnitId unit_state unitId of
+    Just unitInfo -> pure unitInfo
+    Nothing -> fail "unknown package"
+
+packageFlag :: PackageDesc -> String
+packageFlag (ByPackageName name) = "-package=" ++ name
+packageFlag (ByUnitId uid) = "-unit-id=" ++ uid
 
 computePackageAPI
   :: Bool
   -> FilePath
   -> [ModuleName]
-  -> String
+  -> PackageDesc
   -> IO String
-computePackageAPI usePublicOnly root userIgnoredModules packageName = runGhc (Just root) $ do
+computePackageAPI usePublicOnly root userIgnoredModules pdesc = runGhc (Just root) $ do
   let args :: [Located String] =
         map
           noLoc
-          [ "-package=" ++ packageName
+          [ packageFlag pdesc
           , "-dppr-cols=1000"
           , "-fprint-explicit-runtime-reps"
           , "-fprint-explicit-foralls"
@@ -120,17 +140,11 @@ computePackageAPI usePublicOnly root userIgnoredModules packageName = runGhc (Ju
     pure dflags'
 
   _ <- setProgramDynFlags dflags
-  unit_state <- hsc_units <$> getSession
-  unitId <- case lookupPackageName unit_state (PackageName $ fsLit packageName) of
-    Just unitId -> pure unitId
-    Nothing -> fail "failed to find package"
-  unitInfo <- case lookupUnitId unit_state unitId of
-    Just unitInfo -> pure unitInfo
-    Nothing -> fail "unknown package"
-
+  unitInfo <- getPackageDesc pdesc
   decls_doc <- reportUnitDecls usePublicOnly userIgnoredModules unitInfo
   insts_doc <- reportInstances
 
+  unit_state <- hsc_units <$> getSession
   name_ppr_ctx <- GHC.getNamePprCtx
   pure $ List.trim $ showSDocForUser dflags unit_state name_ppr_ctx (vcat [decls_doc, insts_doc])
 
