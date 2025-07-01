@@ -11,8 +11,10 @@ author:             Ben Gamari, Hécate Kleidukos
 maintainer:         hecate+github@glitchbra.in
 copyright:          © 2023 Ben Gamari, 2024 Hécate Kleidukos
 extra-source-files:
-  compat/9.10.1/GHC/Compat.hs
+  compat/9.13.0/GHC/Compat.hs
+  compat/9.12.2/GHC/Compat.hs
   compat/9.12.1/GHC/Compat.hs
+  compat/9.10.1/GHC/Compat.hs
   compat/9.6.6/GHC/Compat.hs
   compat/9.8.4/GHC/Compat.hs
 
@@ -81,6 +83,12 @@ library
 
   if impl(ghc ==9.12.1)
     hs-source-dirs: compat/9.12.1
+
+  if impl(ghc ==9.12.2)
+    hs-source-dirs: compat/9.12.2
+
+  if impl(ghc >=9.13.0)
+    hs-source-dirs: compat/9.13.0
 
   other-modules:   Paths_print_api
   autogen-modules: Paths_print_api
@@ -157,6 +165,16 @@ executable print-api-9.12.1
   main-is: Main.hs
 
   if impl(ghc ==9.12.1)
+    buildable: True
+
+  else
+    buildable: False
+
+executable print-api-9.12.2
+  import:  print-api-common
+  main-is: Main.hs
+
+  if impl(ghc ==9.12.2)
     buildable: True
 
   else
