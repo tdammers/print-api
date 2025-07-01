@@ -83,19 +83,20 @@ run
   :: FilePath
   -> Maybe OsPath
   -> Bool
+  -> [String] -- ^ GHC options
   -> PackageDesc
   -> IO ()
-run root mIgnoreList usePublicOnly pdesc = do
+run root mIgnoreList usePublicOnly ghcOptions pdesc = do
   case mIgnoreList of
     Nothing -> do
-      rendered <- computePackageAPI usePublicOnly root [] pdesc
+      rendered <- computePackageAPI usePublicOnly root ghcOptions [] pdesc
       liftIO $ putStrLn rendered
     Just ignoreListPath -> do
       userIgnoredModules <- do
         ignoreListFilePath <- liftIO $ OsPath.decodeFS ignoreListPath
         modules <- lines <$> liftIO (System.readFile ignoreListFilePath)
         pure $ List.map mkModuleName modules
-      rendered <- computePackageAPI usePublicOnly root userIgnoredModules pdesc
+      rendered <- computePackageAPI usePublicOnly root ghcOptions userIgnoredModules pdesc
       liftIO $ putStrLn rendered
 
 getPackageDesc
@@ -120,18 +121,18 @@ packageFlag (ByUnitId uid) = "-unit-id=" ++ uid
 computePackageAPI
   :: Bool
   -> FilePath
+  -> [String]
   -> [ModuleName]
   -> PackageDesc
   -> IO String
-computePackageAPI usePublicOnly root userIgnoredModules pdesc = runGhc (Just root) $ do
+computePackageAPI usePublicOnly root ghcOptions userIgnoredModules pdesc = runGhc (Just root) $ do
   let args :: [Located String] =
-        map
-          noLoc
+        map noLoc $
           [ packageFlag pdesc
           , "-dppr-cols=1000"
           , "-fprint-explicit-runtime-reps"
           , "-fprint-explicit-foralls"
-          ]
+          ] ++ ghcOptions
   dflags <- do
     dflags <- getSessionDynFlags
     logger <- getLogger

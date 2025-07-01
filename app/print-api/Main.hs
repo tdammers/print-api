@@ -20,6 +20,6 @@ main = do
 runOptions
   :: Options
   -> IO ()
-runOptions (Options packageName mIgnoreList usePublicOnly) = do
+runOptions (Options packageName mIgnoreList usePublicOnly ghcOptions) = do
   stdOut <- readCabalizedProcess (Just TOOL_VERSION_ghc) "ghc" ["--print-libdir"]
-  run (List.trimEnd $ ByteString.unpack stdOut) mIgnoreList usePublicOnly packageName
+  run (List.trimEnd $ ByteString.unpack stdOut) mIgnoreList usePublicOnly ghcOptions packageName

@@ -25,6 +25,7 @@ data Options = Options
   { package :: PackageDesc
   , ignoreList :: Maybe OsPath
   , haddockMetadata :: Bool
+  , ghcOptions :: [String]
   }
   deriving stock (Show, Ord, Eq)
 
@@ -40,6 +41,8 @@ parseOptions =
     <*> optional
       (option osPathOption (long "modules-ignore-list" <> metavar "FILE" <> help "Read the file for a list of ignored modules (one per line)"))
     <*> switch (long "public-only" <> help "Process modules with `Visibility: Public` set in their Haddock attributes.")
+    <*> many
+      (option str (long "ghc-option" <> help "Option to pass to GHC session."))
 
 data PackageDesc = ByPackageName String | ByUnitId String
   deriving stock (Show, Ord, Eq)
