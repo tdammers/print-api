@@ -165,20 +165,20 @@ reportModuleDecls usePublicOnly userIgnoredModules unitId moduleName
       mod_info <- case mb_mod_info of
         Nothing -> fail "Failed to find module"
         Just mod_info -> pure mod_info
-      let mDocs =
-            mod_info
-              & modInfoIface
-              & Maybe.fromJust
-              & mi_docs
-      case mDocs of
-        Nothing -> pure empty
-        Just docs -> do
-          if usePublicOnly
-            then
+      if usePublicOnly then do
+          let mDocs =
+                mod_info
+                  & modInfoIface
+                  & Maybe.fromJust
+                  & mi_docs
+          case mDocs of
+            Nothing -> pure empty
+            Just docs -> do
               if isVisible docs
                 then extractModuleDeclarations modl mod_info
                 else pure empty
-            else extractModuleDeclarations modl mod_info
+      else
+        extractModuleDeclarations modl mod_info
 
 extractModuleDeclarations :: Module -> ModuleInfo -> Ghc SDoc
 extractModuleDeclarations modl mod_info = do
