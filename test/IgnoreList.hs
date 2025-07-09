@@ -21,6 +21,7 @@ import Control.Monad.Extra (whenM)
 
 import PrintApi.CLI.Types (PackageDesc (..))
 import qualified PrintApi.CLI.Cmd.Dump as Dump
+import PrintApi.CLI.Types (PackageDesc (..))
 
 diffCmd :: String -> String -> [String]
 diffCmd ref new = ["diff", "-u", ref, new]
