@@ -180,6 +180,16 @@ executable print-api-9.12.2
   else
     buildable: False
 
+executable print-api-9.13.20250623
+  import:  print-api-common
+  main-is: Main.hs
+
+  if impl(ghc ==9.13.20250623)
+    buildable: True
+
+  else
+    buildable: False
+
 test-suite print-api-test
   import:         extensions
   import:         ghc-options
