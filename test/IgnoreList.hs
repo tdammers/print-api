@@ -21,7 +21,6 @@ import Control.Monad.Extra (whenM)
 
 import PrintApi.CLI.Types (PackageDesc (..))
 import qualified PrintApi.CLI.Cmd.Dump as Dump
-import PrintApi.CLI.Types (PackageDesc (..))
 
 diffCmd :: String -> String -> [String]
 diffCmd ref new = ["diff", "-u", ref, new]
@@ -50,7 +49,7 @@ generateVectorAPIWithIgnoreList = do
   ignoreListFilePath <- liftIO $ OsPath.decodeUtf ignoreListPath
   modules <- lines <$> liftIO (System.readFile ignoreListFilePath)
   let ignoredModules = List.map mkModuleName modules
-  actualAPI <- liftIO $ Dump.computePackageAPI False (List.trimEnd $ C8.unpack stdOut) ignoredModules (ByPackageName "vector")
+  actualAPI <- liftIO $ Dump.computePackageAPI False (List.trimEnd $ C8.unpack stdOut) [] ignoredModules (ByPackageName "vector")
   actualApiPath <- liftIO $ Directory.makeAbsolute "../print-api/test/golden/vector-actual-api.txt"
   liftIO $ System.writeFile actualApiPath actualAPI
   liftIO $ ByteString.readFile actualApiPath
