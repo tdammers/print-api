@@ -19,7 +19,7 @@ extra-source-files:
   compat/9.12.2/GHC/Compat.hs
   compat/9.13.0/GHC/Compat.hs
 
-tested-with:        GHC ==9.6.6 || ==9.8.4 || ==9.10.1 || ==9.10.2 || ==9.12.1
+tested-with:        GHC ==9.6.6 || ==9.8.4 || ==9.10.1 || ==9.10.2 || ==9.12.1 || ==9.12.2
 
 common extensions
   default-extensions:
