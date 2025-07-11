@@ -11,12 +11,12 @@ author:             Ben Gamari, Hécate Kleidukos
 maintainer:         hecate+github@glitchbra.in
 copyright:          © 2023 Ben Gamari, 2024 Hécate Kleidukos
 extra-source-files:
-  compat/9.13.0/GHC/Compat.hs
-  compat/9.12.2/GHC/Compat.hs
-  compat/9.12.1/GHC/Compat.hs
-  compat/9.10.1/GHC/Compat.hs
   compat/9.6.6/GHC/Compat.hs
   compat/9.8.4/GHC/Compat.hs
+  compat/9.10.1/GHC/Compat.hs
+  compat/9.12.1/GHC/Compat.hs
+  compat/9.12.2/GHC/Compat.hs
+  compat/9.13.0/GHC/Compat.hs
 
 tested-with:        GHC ==9.6.6 || ==9.8.4 || ==9.10.1 || ==9.12.1
 
