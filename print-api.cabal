@@ -14,11 +14,12 @@ extra-source-files:
   compat/9.6.6/GHC/Compat.hs
   compat/9.8.4/GHC/Compat.hs
   compat/9.10.1/GHC/Compat.hs
+  compat/9.10.2/GHC/Compat.hs
   compat/9.12.1/GHC/Compat.hs
   compat/9.12.2/GHC/Compat.hs
   compat/9.13.0/GHC/Compat.hs
 
-tested-with:        GHC ==9.6.6 || ==9.8.4 || ==9.10.1 || ==9.12.1
+tested-with:        GHC ==9.6.6 || ==9.8.4 || ==9.10.1 || ==9.10.2 || ==9.12.1
 
 common extensions
   default-extensions:
@@ -80,6 +81,9 @@ library
 
   if impl(ghc ==9.10.1)
     hs-source-dirs: compat/9.10.1
+
+  if impl(ghc ==9.10.2)
+    hs-source-dirs: compat/9.10.2
 
   if impl(ghc ==9.12.1)
     hs-source-dirs: compat/9.12.1
@@ -155,6 +159,16 @@ executable print-api-9.10.1
   main-is: Main.hs
 
   if impl(ghc ==9.10.1)
+    buildable: True
+
+  else
+    buildable: False
+
+executable print-api-9.10.2
+  import:  print-api-common
+  main-is: Main.hs
+
+  if impl(ghc ==9.10.2)
     buildable: True
 
   else
